@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class Epic extends Task{
+public class Epic extends Task {
 
     protected ArrayList<Integer> subtaskIds = new ArrayList<>();
 
@@ -20,8 +20,8 @@ public class Epic extends Task{
         subtaskIds.remove(idSubtask);
     }
 
-    public void clearSubtaskId (){
-       subtaskIds.clear();
+    public void clearSubtaskId() {
+        subtaskIds.clear();
     }
 
     public ArrayList<Integer> getSubtaskIds() {
