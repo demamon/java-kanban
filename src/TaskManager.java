@@ -8,21 +8,21 @@ public class TaskManager {
     private final static HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
 
-    int addNewTask(Task task) {
+    public int addNewTask(Task task) {
         final int id = ++generationId;
         task.setId(id);
         tasks.put(task.getId(), task);
         return id;
     }
 
-    int addNewEpic(Epic epic) {
+    public int addNewEpic(Epic epic) {
         final int id = ++generationId;
         epic.setId(id);
         epics.put(epic.getId(), epic);
         return id;
     }
 
-    int addNewSubtask(Subtask subtask) {
+    public int addNewSubtask(Subtask subtask) {
         Epic epic = getEpic(subtask.getEpicId());
         if (epic == null) {
             System.out.println("Эпика под номером " + subtask.getEpicId() + " нет");
@@ -66,19 +66,19 @@ public class TaskManager {
         }
     }
 
-    ArrayList<Task> getTasks() {
+    public ArrayList<Task> getTasks() {
         return new ArrayList<>(tasks.values());
     }
 
-    ArrayList<Epic> getEpics() {
+    public ArrayList<Epic> getEpics() {
         return new ArrayList<>(epics.values());
     }
 
-    ArrayList<Subtask> getSubtasks() {
+    public ArrayList<Subtask> getSubtasks() {
         return new ArrayList<>(subtasks.values());
     }
 
-    ArrayList<Subtask> getSubtasksForEpic(int id) {
+    public ArrayList<Subtask> getSubtasksForEpic(int id) {
         Epic epic = epics.get(id);
         if (epic == null) {
             System.out.println("Задачи под номером " + id + " нет");
@@ -92,16 +92,16 @@ public class TaskManager {
         return subtasksForEpic;
     }
 
-    void clearTasks() {
+    public void clearTasks() {
         tasks.clear();
     }
 
-    void clearEpics() {
+    public void clearEpics() {
         epics.clear();
         subtasks.clear();
     }
 
-    void clearSubtasks() {
+    public void clearSubtasks() {
         subtasks.clear();
         for (Epic epic : epics.values()) {
             epic.clearSubtaskId();
@@ -109,21 +109,21 @@ public class TaskManager {
         }
     }
 
-    Task getTask(int id) {
+    public Task getTask(int id) {
         if (tasks.get(id) == null) {
             System.out.println("Задачи под номером " + id + " нет");
         }
         return tasks.get(id);
     }
 
-    Epic getEpic(int id) {
+    public Epic getEpic(int id) {
         if (epics.get(id) == null) {
             System.out.println("Задачи под номером " + id + " нет");
         }
         return epics.get(id);
     }
 
-    Subtask getSubtask(int id) {
+    public Subtask getSubtask(int id) {
         if (subtasks.get(id) == null) {
             System.out.println("Задачи под номером " + id + " нет");
         }
@@ -131,7 +131,7 @@ public class TaskManager {
     }
 
 
-    void updateTask(Task task) {
+    public void updateTask(Task task) {
         if (tasks.get(task.getId()) == null) {
             System.out.println("Задачи под номером " + task.getId() + " нет");
         } else {
@@ -139,7 +139,7 @@ public class TaskManager {
         }
     }
 
-    void updateEpic(Epic newEpic) {
+    public void updateEpic(Epic newEpic) {
         if (epics.get(newEpic.getId()) == null) {
             System.out.println("Задачи под номером " + newEpic.getId() + " нет");
         } else {
@@ -151,7 +151,7 @@ public class TaskManager {
         }
     }
 
-    void updateSubtask(Subtask subtask) {
+    public void updateSubtask(Subtask subtask) {
         if (subtasks.get(subtask.getId()) == null) {
             System.out.println("Задачи под номером " + subtask.getId() + " нет");
         } else {
@@ -167,7 +167,7 @@ public class TaskManager {
         }
     }
 
-    void deleteTask(int id) {
+    public void deleteTask(int id) {
         if (tasks.get(id) == null) {
             System.out.println("Задачи под номером " + id + " нет");
         } else {
@@ -175,7 +175,7 @@ public class TaskManager {
         }
     }
 
-    void deleteEpic(int id) {
+    public void deleteEpic(int id) {
         if (epics.get(id) == null) {
             System.out.println("Задачи под номером " + id + " нет");
         } else {
@@ -188,7 +188,7 @@ public class TaskManager {
         }
     }
 
-    void deleteSubtask(int id) {
+    public void deleteSubtask(int id) {
         if (subtasks.get(id) == null) {
             System.out.println("Задачи под номером " + id + " нет");
         } else {
