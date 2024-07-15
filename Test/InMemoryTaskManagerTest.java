@@ -1,8 +1,12 @@
+import manager.ManagersUtils;
+import manager.TaskManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import tasks.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +33,7 @@ class InMemoryTaskManagerTest {
         assertNotNull(savedTask, "Задача не найдена.");
         assertEquals(task, savedTask, "Задачи не совпадают.");
 
-        final ArrayList<Task> tasks = tm.getTasks();
+        final List<Task> tasks = tm.getTasks();
 
         assertNotNull(tasks, "Задачи не возвращаются.");
         assertEquals(1, tasks.size(), "Неверное количество задач.");
@@ -45,7 +49,7 @@ class InMemoryTaskManagerTest {
         assertNotNull(savedEpic, "Эпик не найден.");
         assertEquals(epic, savedEpic, "Эпики не совпадают.");
 
-        final ArrayList<Epic> epics = tm.getEpics();
+        final List<Epic> epics = tm.getEpics();
 
         assertNotNull(epics, "Эпики не возвращаются.");
         assertEquals(1, epics.size(), "Неверное количество эпиков.");
@@ -64,7 +68,7 @@ class InMemoryTaskManagerTest {
         assertNotNull(savedSubtask, "Подзадача не найдена.");
         assertEquals(subtask, savedSubtask, "Подзадачи не совпадают.");
 
-        final ArrayList<Subtask> subtasks = tm.getSubtasks();
+        final List<Subtask> subtasks = tm.getSubtasks();
 
         assertNotNull(subtasks, "Подзадачи не возвращаются.");
         assertEquals(1, subtasks.size(), "Неверное количество подзадач.");
@@ -101,12 +105,12 @@ class InMemoryTaskManagerTest {
 
         tm.addNewSubtask(subtask);
 
-        ArrayList<Subtask> subtasksForOldEpic = tm.getSubtasksForEpic(epicId);
+        List<Subtask> subtasksForOldEpic = tm.getSubtasksForEpic(epicId);
         Epic updateEpic = new Epic("Test updateEpic", "Test updateEpic description", epicId);
 
         tm.updateEpic(updateEpic);
 
-        ArrayList<Subtask> subtasksForUpdateEpic = tm.getSubtasksForEpic(epicId);
+        List<Subtask> subtasksForUpdateEpic = tm.getSubtasksForEpic(epicId);
         final Epic savedUpdateEpic = tm.getEpic(epicId);
 
         assertEquals(updateEpic, savedUpdateEpic, "Эпик не обновился.");
@@ -141,7 +145,7 @@ class InMemoryTaskManagerTest {
 
         tm.updateSubtask(subtaskIncorrectEpicId);
 
-        ArrayList<Subtask> subtasksForEpicNoSubtasksID = tm.getSubtasksForEpic(epicNoSubtasksID);
+        List<Subtask> subtasksForEpicNoSubtasksID = tm.getSubtasksForEpic(epicNoSubtasksID);
 
         assertEquals(subtasksForEpicNoSubtasksID, new ArrayList<>(), "Подзадача добавлена не в свой эпик.");
 
@@ -203,7 +207,7 @@ class InMemoryTaskManagerTest {
 
         tm.getTask(taskId);
 
-        final ArrayList<Task> historyTask = tm.getHistory();
+        final List<Task> historyTask = tm.getHistory();
         Task UptadeTask = new Task("Test UpdateTask", "Test UpdateTask description", TaskStatus.DONE, taskId);
 
         tm.updateTask(UptadeTask);
@@ -215,7 +219,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void updateEpicStatus() {
-        Epic epic = new Epic("Test Epic", "Test Epic description");
+        Epic epic = new Epic("Test tasks.Epic", "Test tasks.Epic description");
         final int epicId = tm.addNewEpic(epic);
 
         epic = tm.getEpic(epicId);

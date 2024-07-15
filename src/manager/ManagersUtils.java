@@ -1,3 +1,5 @@
+package manager;
+
 public final class ManagersUtils {
 
     private ManagersUtils() {

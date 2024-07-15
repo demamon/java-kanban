@@ -1,7 +1,12 @@
+package manager;
+
+import tasks.Task;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final ArrayList<Task> historyViewedTasks = new ArrayList<>(10);
+    private final List<Task> historyViewedTasks = new ArrayList<>(10);
 
     InMemoryHistoryManager() {
     }
@@ -10,17 +15,15 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void add(Task task) {
         if (historyViewedTasks.size() == 10) {
             historyViewedTasks.removeFirst();
-            historyViewedTasks.add(task);
-        } else {
-            historyViewedTasks.add(task);
         }
+            historyViewedTasks.add(task);
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         if (historyViewedTasks.isEmpty()) {
             System.out.println("Список просмотренных задач пуст");
         }
-        return historyViewedTasks;
+        return new ArrayList<>(historyViewedTasks);
     }
 }
