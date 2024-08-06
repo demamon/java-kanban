@@ -16,16 +16,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         private HistoryListNode linkLast(Task task) {
             if (tail == null) {
                 tail = new HistoryListNode(task);
-                if (head == null) {
-                    head = tail;
-                }
-                size++;
-                return tail;
-            }
-            if (head == tail) {
-                tail = new HistoryListNode(task);
-                head.setNext(tail);
-                tail.setPrev(head);
+                head = tail;
                 size++;
                 return tail;
             }
@@ -39,13 +30,10 @@ public class InMemoryHistoryManager implements HistoryManager {
 
         private ArrayList<Task> getTasks() {
             ArrayList<Task> tasks = new ArrayList<>();
-            tasks.add(tail.getData());
-            HistoryListNode node = tail.getPrev();
-            for (int i = 1; i < size; i++) {
+            HistoryListNode node = tail;
+            while (node != null) {
                 tasks.add(node.getData());
-                if (!(node.getPrev() == null)) {
-                    node = node.getPrev();
-                }
+                node = node.getPrev();
             }
             return tasks;
         }
@@ -53,7 +41,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         private void removeNode(HistoryListNode node) {
             HistoryListNode prevNode = node.getPrev();
             HistoryListNode nextNode = node.getNext();
-            if (nextNode == null && (!(prevNode == null))) {
+            if (nextNode == null && (prevNode != null)) {
                 prevNode.setNext(null);
                 tail = prevNode;
                 size--;
@@ -61,18 +49,16 @@ public class InMemoryHistoryManager implements HistoryManager {
             }
             if (nextNode == null) {
                 tail = null;
+                head = null;
                 size--;
                 return;
             }
             if (prevNode == null) {
-                node.setNext(null);
                 nextNode.setPrev(null);
                 head = nextNode;
                 size--;
                 return;
             }
-            node.setPrev(null);
-            node.setNext(null);
             prevNode.setNext(nextNode);
             nextNode.setPrev(prevNode);
             size--;
