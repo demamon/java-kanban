@@ -11,6 +11,8 @@ public static void main() {
     TaskManager tm = ManagersUtils.getDefault();
     Task task = new Task("Test tasks", "Test tasks description", TaskStatus.NEW);
     Epic epic = new Epic("Test epic", "Test epic description");
+    Task task10 = new Task("Test tasks", "Test tasks description", TaskStatus.NEW);
+    Epic epic10 = new Epic("Test epic", "Test epic description");
     Epic epic2 = new Epic("Test epic2", "Test epic2 description");
     Subtask subtask = new Subtask("Test subtask", "Test subtask description", TaskStatus.NEW, 2);
     Subtask subtask2 = new Subtask("Test subtask2", "Test subtask2 description", TaskStatus.NEW, 2);
