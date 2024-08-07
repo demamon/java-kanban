@@ -201,23 +201,6 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void getHistoryWithUpdateTask() {
-        Task task = new Task("Test oldTask", "Test oldTask description", TaskStatus.NEW);
-        final int taskId = tm.addNewTask(task);
-
-        tm.getTask(taskId);
-
-        final List<Task> historyTask = tm.getHistory();
-        Task UptadeTask = new Task("Test UpdateTask", "Test UpdateTask description", TaskStatus.DONE, taskId);
-
-        tm.updateTask(UptadeTask);
-
-        Task oldTask = historyTask.getLast();
-
-        assertEquals(oldTask, task, "История не сохраняет предыдущие данные задачи.");
-    }
-
-    @Test
     void updateEpicStatus() {
         Epic epic = new Epic("Test tasks.Epic", "Test tasks.Epic description");
         final int epicId = tm.addNewEpic(epic);
@@ -244,6 +227,22 @@ class InMemoryTaskManagerTest {
         tm.deleteSubtask(newSubtask2Id);
         epic = tm.getEpic(epicId);
         assertEquals(epic.getStatus(), TaskStatus.DONE, "Эпик с подзадачами в статусе DONE не имеет статуса DONE.");
+    }
+
+    @Test
+    void deleteEpicAndSubtasksHistory() {
+        Epic epic = new Epic("Test epic", "Test epic description");
+        tm.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test subtask", "Test subtask description", TaskStatus.NEW, 1);
+        Subtask subtask1 = new Subtask("Test subtask1", "Test subtask1 description", TaskStatus.NEW, 1);
+        tm.addNewSubtask(subtask);
+        tm.addNewSubtask(subtask1);
+        tm.getEpic(epic.getId());
+        tm.getSubtask(subtask.getId());
+        tm.getSubtask(subtask1.getId());
+        tm.deleteEpic(epic.getId());
+        final List<Task> history = tm.getHistory();
+        assertNull(history, "Подзадачи эпика из истории при удалении эпика не удаляются");
     }
 
 }

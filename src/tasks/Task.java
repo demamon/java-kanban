@@ -38,7 +38,11 @@ public class Task {
     }
 
     public void setName(String name) {
-        this.name = name;
+        if (this.name == null) {
+            this.name = name;
+            return;
+        }
+        System.out.println("У задачи уже есть name");
     }
 
     public String getDescription() {
@@ -46,7 +50,11 @@ public class Task {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        if (this.description == null) {
+            this.description = description;
+            return;
+        }
+        System.out.println("У задачи уже есть description");
     }
 
     public int getId() {
@@ -58,7 +66,11 @@ public class Task {
     }
 
     public void setId(int id) {
-        this.id = id;
+        if (this.id == 0) {
+            this.id = id;
+            return;
+        }
+        System.out.println("У задачи уже есть id");
     }
 
     public TaskStatus getStatus() {
