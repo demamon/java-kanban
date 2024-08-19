@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
-    static private Path path = null;
+    static public Path path = null;
 
     FileBackedTaskManager() {
         path = Paths.get("C:\\Users\\d-ba\\IdeaProjects\\java-kanban\\tasks-file.csv");
