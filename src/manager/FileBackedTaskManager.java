@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 public class FileBackedTaskManager extends InMemoryTaskManager {
     public Path path;
 
-    FileBackedTaskManager(Path path) {
+   public FileBackedTaskManager(Path path) {
         this.path = path;
     }
 
