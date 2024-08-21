@@ -260,4 +260,12 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Task> getHistory() {
         return hm.getHistory();
     }
+
+    public int getGenerationId() {
+        return generationId;
+    }
+
+    public void setGenerationId(int generationId) {
+        this.generationId = generationId;
+    }
 }
