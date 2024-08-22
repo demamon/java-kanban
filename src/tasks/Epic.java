@@ -17,6 +17,10 @@ public class Epic extends Task {
         this.status = TaskStatus.NEW;
     }
 
+    public Epic(String name, String description, TaskStatus taskStatus, int id) {
+        super(name,description,taskStatus,id);
+    }
+
     public void addSubtaskId(int id) {
         subtaskIds.add(id);
     }
@@ -39,13 +43,7 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "tasks.Epic{" +
-                "subtaskIds=" + subtaskIds +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                ", id=" + id +
-                '}';
+        return id + "," + TaskType.EPIC + "," + name + "," + status + "," + description;
     }
 
     @Override

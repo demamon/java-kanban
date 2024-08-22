@@ -12,9 +12,9 @@ import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
     private int generationId = 0;
-    private final Map<Integer, Task> tasks = new HashMap<>();
-    private final Map<Integer, Epic> epics = new HashMap<>();
-    private final Map<Integer, Subtask> subtasks = new HashMap<>();
+    final Map<Integer, Task> tasks = new HashMap<>();
+    final Map<Integer, Epic> epics = new HashMap<>();
+    final Map<Integer, Subtask> subtasks = new HashMap<>();
     private final HistoryManager hm = ManagersUtils.getDefaultHistory();
 
     InMemoryTaskManager() {
@@ -259,5 +259,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return hm.getHistory();
+    }
+
+    public int getGenerationId() {
+        return generationId;
+    }
+
+    public void setGenerationId(int generationId) {
+        this.generationId = generationId;
     }
 }
