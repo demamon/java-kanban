@@ -1,28 +1,29 @@
 import manager.FileBackedTaskManager;
-import org.junit.jupiter.api.AfterEach;
+import manager.ManagerSaveException;
+import manager.TaskManager;
 import org.junit.jupiter.api.Test;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 import tasks.TaskStatus;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest extends TaskManagerTest<TaskManager> {
 
     private static final Path path = Paths.get("C:\\Users\\d-ba\\IdeaProjects\\java-kanban\\tasks-file.csv");
     private static final FileBackedTaskManager tm = new FileBackedTaskManager(path);
-
-    @AfterEach
-    void afterEach() {
-        tm.clearEpics();
-        tm.clearTasks();
-    }
 
     @Test
     void saveAndLoadEmptyFile() {
@@ -50,8 +51,33 @@ public class FileBackedTaskManagerTest {
         List<Task> tasksLoad = tm1.getTasks();
         List<Epic> epicsLoad = tm1.getEpics();
         List<Subtask> subtasksLoad = tm1.getSubtasks();
-        assertEquals(tasksSave, tasksLoad, "задачи не передаются в новый менеджер.");
-        assertEquals(epicsSave, epicsLoad, "Эпики не передаются в новый менеджер.");
-        assertEquals(subtasksSave, subtasksLoad, "Подзадачи не передаются в новый менеджер.");
+        assertEquals(tasksSave.toString(), tasksLoad.toString(), "задачи не передаются в новый менеджер.");
+        assertEquals(epicsSave.toString(), epicsLoad.toString(), "Эпики не передаются в новый менеджер.");
+        assertEquals(subtasksSave.toString(), subtasksLoad.toString(), "Подзадачи не передаются в новый менеджер.");
+    }
+
+    @Test
+    void testException() {
+        final Map<Integer, Task> tasks = new HashMap<>();
+        Task task1 = new Task("Task1", "Task1", TaskStatus.NEW, 1);
+        tasks.put(task1.getId(), task1);
+        try {
+            try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(String.valueOf(path),
+                    StandardCharsets.UTF_8))) {
+                fileWriter.write("id,type,name,status,description,startTime,duration,endTime,epic" + "\n");
+                tasks.values().forEach(task -> {
+                    try {
+                        fileWriter.write(task.toString() + "\n");
+                    } catch (IOException e) {
+                        assertThrows(IOException.class, fileWriter::close, "закрытие файла должно приводить к исключению");
+                        throw new ManagerSaveException("Произошла ошибка во время записи файла.");
+                    }
+                });
+            } catch (IOException e) {
+                throw new ManagerSaveException("Произошла ошибка во время записи файла.");
+            }
+        } catch (ManagerSaveException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

@@ -5,6 +5,8 @@ import tasks.Subtask;
 import tasks.Task;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public interface TaskManager {
     int addNewTask(Task task);
@@ -46,4 +48,6 @@ public interface TaskManager {
     void deleteSubtask(int id);
 
     List<Task> getHistory();
+
+    Set<Task> getPrioritizedTasks();
 }
