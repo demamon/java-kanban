@@ -139,11 +139,11 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private void deleteOldTaskForSet(Task task) {
-        Optional<Integer> MayBeIdTask = prioritizedTask.stream()
+        Optional<Integer> mayBeIdTask = prioritizedTask.stream()
                 .map(Task::getId)
                 .filter(idSet -> idSet == task.getId()).findFirst();
-        if (MayBeIdTask.isPresent()) {
-            Task oldTask = tasks.get(MayBeIdTask.get());
+        if (mayBeIdTask.isPresent()) {
+            Task oldTask = tasks.get(mayBeIdTask.get());
             prioritizedTask.remove(oldTask);
         }
     }
