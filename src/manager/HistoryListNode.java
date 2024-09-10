@@ -4,7 +4,7 @@ import tasks.Task;
 
 import java.util.Objects;
 
-public class HistoryListNode  {
+public class HistoryListNode {
     private Task data;
     private HistoryListNode next;
     private HistoryListNode prev;
@@ -15,29 +15,29 @@ public class HistoryListNode  {
         this.prev = null;
     }
 
-     public Task getData() {
-         return data;
-     }
+    public Task getData() {
+        return data;
+    }
 
-     public void setData(Task data) {
-         this.data = data;
-     }
+    public void setData(Task data) {
+        this.data = data;
+    }
 
-     public HistoryListNode getNext() {
-         return next;
-     }
+    public HistoryListNode getNext() {
+        return next;
+    }
 
-     public void setNext(HistoryListNode next) {
-         this.next = next;
-     }
+    public void setNext(HistoryListNode next) {
+        this.next = next;
+    }
 
-     public HistoryListNode getPrev() {
-         return prev;
-     }
+    public HistoryListNode getPrev() {
+        return prev;
+    }
 
-     public void setPrev(HistoryListNode prev) {
-         this.prev = prev;
-     }
+    public void setPrev(HistoryListNode prev) {
+        this.prev = prev;
+    }
 
     @Override
     public boolean equals(Object o) {

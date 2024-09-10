@@ -5,12 +5,13 @@ import tasks.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     public Path path;
 
-   public FileBackedTaskManager(Path path) {
+    public FileBackedTaskManager(Path path) {
         this.path = path;
     }
 
@@ -93,16 +94,28 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         try {
             try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(String.valueOf(path),
                     StandardCharsets.UTF_8))) {
-                fileWriter.write("id,type,name,status,description,epic" + "\n");
-                for (Task task : super.tasks.values()) {
-                    fileWriter.write(task.toString() + "\n");
-                }
-                for (Epic epic : super.epics.values()) {
-                    fileWriter.write(epic.toString() + "\n");
-                }
-                for (Subtask subtask : super.subtasks.values()) {
-                    fileWriter.write(subtask.toString() + "\n");
-                }
+                fileWriter.write("id,type,name,status,description,startTime,duration,endTime,epic" + "\n");
+                super.tasks.values().forEach(task -> {
+                    try {
+                        fileWriter.write(task.toString() + "\n");
+                    } catch (IOException e) {
+                        throw new ManagerSaveException("Произошла ошибка во время записи файла.");
+                    }
+                });
+                super.epics.values().forEach(epic -> {
+                    try {
+                        fileWriter.write(epic.toString() + "\n");
+                    } catch (IOException e) {
+                        throw new ManagerSaveException("Произошла ошибка во время записи файла.");
+                    }
+                });
+                super.subtasks.values().forEach(subtask -> {
+                    try {
+                        fileWriter.write(subtask.toString() + "\n");
+                    } catch (IOException e) {
+                        throw new ManagerSaveException("Произошла ошибка во время записи файла.");
+                    }
+                });
             } catch (IOException e) {
                 throw new ManagerSaveException("Произошла ошибка во время записи файла.");
             }
@@ -141,9 +154,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private int taskFromString(String[] taskItem, int maxId) {
+        Task task;
         int id = Integer.parseInt(taskItem[0]);
+        String startTime = taskItem[5];
         TaskStatus taskStatus = TaskStatus.valueOf(taskItem[3]);
-        Task task = new Task(taskItem[2], taskItem[4], taskStatus, id);
+        Duration duration = Duration.ofMinutes(Long.parseLong(taskItem[6]));
+        if (startTime.equals("Время начала не задано")) {
+            task = new Task(taskItem[2], taskItem[4], taskStatus, id, duration);
+        } else {
+            LocalDateTime localDateTime = LocalDateTime.parse(taskItem[5]);
+            task = new Task(taskItem[2], taskItem[4], taskStatus, id, localDateTime, duration);
+        }
         super.tasks.put(task.getId(), task);
         if (maxId < id) {
             maxId = id;
@@ -152,9 +173,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private int epicFromString(String[] taskItem, int maxId) {
+        Epic epic;
         int id = Integer.parseInt(taskItem[0]);
         TaskStatus taskStatus = TaskStatus.valueOf(taskItem[3]);
-        Epic epic = new Epic(taskItem[2], taskItem[4], taskStatus, id);
+        Duration duration = Duration.ofMinutes(Long.parseLong(taskItem[6]));
+        String startTime = taskItem[5];
+        if (startTime.equals("Время начала не задано")) {
+            epic = new Epic(taskItem[2], taskItem[4], taskStatus, id);
+        } else {
+            LocalDateTime dateStartTime = LocalDateTime.parse(taskItem[5]);
+            LocalDateTime dateEndTime = LocalDateTime.parse(taskItem[7]);
+            epic = new Epic(taskItem[2], taskItem[4], taskStatus, id, dateStartTime, duration, dateEndTime);
+        }
         super.epics.put(epic.getId(), epic);
         if (maxId < id) {
             maxId = id;
@@ -163,10 +193,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private int subtaskFromString(String[] taskItem, int maxId) {
+        Subtask subtask;
+        String startTime = taskItem[6];
         int id = Integer.parseInt(taskItem[0]);
         int epicId = Integer.parseInt(taskItem[5]);
         TaskStatus taskStatus = TaskStatus.valueOf(taskItem[3]);
-        Subtask subtask = new Subtask(taskItem[2], taskItem[4], taskStatus, id, epicId);
+        Duration duration = Duration.ofMinutes(Long.parseLong(taskItem[7]));
+        if (startTime.equals("Время начала не задано")) {
+            subtask = new Subtask(taskItem[2], taskItem[4], taskStatus, id, epicId, duration);
+        } else {
+            LocalDateTime localDateTime = LocalDateTime.parse(taskItem[6]);
+            subtask = new Subtask(taskItem[2], taskItem[4], taskStatus, id, epicId, localDateTime, duration);
+        }
         super.subtasks.put(subtask.getId(), subtask);
         Epic epic = super.epics.get(subtask.getEpicId());
         epic.addSubtaskId(subtask.getId());
@@ -174,26 +212,5 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             maxId = id;
         }
         return maxId;
-    }
-
-    public static void main(String[] args) {
-        Path path = Paths.get("C:\\Users\\d-ba\\IdeaProjects\\java-kanban\\tasks-file.csv");
-        FileBackedTaskManager tm = new FileBackedTaskManager(path);
-        Task task = new Task("Test tasks", "Test tasks description", TaskStatus.NEW);
-        Epic epic = new Epic("Test epic", "Test epic description");
-        Epic epic2 = new Epic("Test epic2", "Test epic2 description");
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", TaskStatus.NEW, 2);
-        tm.addNewTask(task);
-        tm.addNewEpic(epic);
-        tm.addNewSubtask(subtask);
-        tm.addNewEpic(epic2);
-        System.out.println(tm.getTasks());
-        System.out.println(tm.getEpics());
-        System.out.println(tm.getSubtasks());
-        FileBackedTaskManager tm1 = loadFromFile(path);
-        System.out.println(tm1.getTasks());
-        System.out.println(tm1.getEpics());
-        System.out.println(tm1.getSubtasks());
-        System.out.println(tm1.getGenerationId());
     }
 }
