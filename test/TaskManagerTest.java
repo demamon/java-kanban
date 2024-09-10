@@ -10,6 +10,7 @@ import tasks.TaskStatus;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -252,16 +253,35 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void intersectionInTime() {
-        LocalDateTime startTime1 = LocalDateTime.now();
-        LocalDateTime startTime2 = LocalDateTime.now().plusMinutes(1);
-        Duration duration = Duration.ofMinutes(60);
-        Task task1 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
-                startTime1, duration);
-        Task task2 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
-                startTime2, duration);
-        tm.addNewTask(task1);
-        tm.addNewTask(task2);
-        Task getTask = tm.getTask(task2.getId());
-        assertNull(getTask, "Добавляется задача с пересекающимся временем");
+        LocalDateTime defaultTime = LocalDateTime.of(2024, Month.SEPTEMBER, 10, 1, 1);
+        LocalDateTime timeAfterDefault = defaultTime.plusMinutes(29);
+        LocalDateTime timeBeforeDefault = defaultTime.minusMinutes(29);
+        LocalDateTime timeInDefaultTime = defaultTime.plusMinutes(2);
+        Duration defaultDuration = Duration.ofMinutes(60);
+        Duration durationInDefaultduration = Duration.ofMinutes(5);
+        Duration durationIncludeDefaultTask = Duration.ofMinutes(200);
+        Task defaultTask = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
+                defaultTime, defaultDuration);
+        Task picture1 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
+                timeAfterDefault, defaultDuration);
+        Task picture2 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
+                timeBeforeDefault, defaultDuration);
+        Task picture3 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
+                timeInDefaultTime, durationInDefaultduration);
+        Task picture4 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
+                timeBeforeDefault, durationIncludeDefaultTask);
+        tm.addNewTask(defaultTask);
+        tm.addNewTask(picture1);
+        Task getTask = tm.getTask(picture1.getId());
+        assertNull(getTask, "Не пройден тест с 1 картинки");
+        tm.addNewTask(picture2);
+        getTask = tm.getTask(picture2.getId());
+        assertNull(getTask, "Не пройден тест с 2 картинки");
+        tm.addNewTask(picture3);
+        getTask = tm.getTask(picture3.getId());
+        assertNull(getTask, "Не пройден тест с 3 картинки");
+        tm.addNewTask(picture4);
+        getTask = tm.getTask(picture4.getId());
+        assertNull(getTask, "Не пройден тест с 4 картинки");
     }
 }

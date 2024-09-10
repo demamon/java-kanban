@@ -15,7 +15,9 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Task> tasks = new HashMap<>();
     protected final Map<Integer, Epic> epics = new HashMap<>();
     protected final Map<Integer, Subtask> subtasks = new HashMap<>();
-    protected final Set<Task> prioritizedTask = new TreeSet<>();
+    private final Comparator<Task> taskComparator = Comparator.comparing(Task::getStartTime);
+    private final Comparator<Task> safeNull = Comparator.nullsFirst(taskComparator).thenComparing(Comparator.naturalOrder());
+    protected final Set<Task> prioritizedTask = new TreeSet<>(safeNull);
     private final HistoryManager hm = ManagersUtils.getDefaultHistory();
 
     InMemoryTaskManager() {
@@ -74,28 +76,25 @@ public class InMemoryTaskManager implements TaskManager {
 
     private void updateEpicDurationAndStartTime(Epic epic) {
         ArrayList<Integer> subtaskIds = epic.getSubtaskIds();
-        Optional<LocalDateTime> startTime = subtaskIds.stream()
+        List<Subtask> listSubtasks = subtaskIds.stream()
                 .map(subtaskId -> Optional.ofNullable(subtasks.get(subtaskId)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .toList();
+        Optional<LocalDateTime> startTime = listSubtasks.stream()
                 .map(subtask -> Optional.ofNullable(subtask.getStartTime()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .min(Comparator.comparing(localDateTime1 -> localDateTime1));
-        startTime.ifPresent(epic::setStartTime);
-        Optional<Duration> duration = subtaskIds.stream()
-                .map(subtaskId -> Optional.ofNullable(subtasks.get(subtaskId)))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        startTime.ifPresentOrElse(epic::setStartTime,
+                () -> epic.setStartTime(null));
+        Optional<Duration> duration = listSubtasks.stream()
                 .map(subtask -> Optional.ofNullable(subtask.getDuration()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .reduce(Duration::plus);
         duration.ifPresent(epic::setDuration);
-        Optional<LocalDateTime> endTime = subtaskIds.stream()
-                .map(subtaskId -> Optional.ofNullable(subtasks.get(subtaskId)))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        Optional<LocalDateTime> endTime = listSubtasks.stream()
                 .map(subtask -> {
                     if (subtask.getStartTime() == null) {
                         return null;
@@ -104,17 +103,17 @@ public class InMemoryTaskManager implements TaskManager {
                 })
                 .filter(Objects::nonNull)
                 .max(Comparator.comparing(localDateTime1 -> localDateTime1));
-        endTime.ifPresent(epic::setEndTime);
+        endTime.ifPresentOrElse(epic::setEndTime,
+                () -> epic.setEndTime(null));
     }
 
     private boolean isIntersection(Task task) {
         boolean isIntersectionStartTime = prioritizedTask.stream()
                 .map(Task::getStartTime)
-                .anyMatch(setStartTime -> setStartTime.equals(task.getEndTime()) ||
-                        setStartTime.isBefore(task.getEndTime()));
+                .anyMatch(setStartTime -> setStartTime.isBefore(task.getEndTime()));
         boolean isIntersectionEndTime = prioritizedTask.stream()
                 .map(Task::getEndTime)
-                .anyMatch(setEndTime -> setEndTime.equals(task.getStartTime()) || setEndTime.isAfter(task.getStartTime()));
+                .anyMatch(setEndTime -> setEndTime.isAfter(task.getStartTime()));
         return isIntersectionStartTime && isIntersectionEndTime;
     }
 
@@ -136,16 +135,6 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
         epic.setStatus(TaskStatus.IN_PROGRESS);
-    }
-
-    private void deleteOldTaskForSet(Task task) {
-        Optional<Integer> mayBeIdTask = prioritizedTask.stream()
-                .map(Task::getId)
-                .filter(idSet -> idSet == task.getId()).findFirst();
-        if (mayBeIdTask.isPresent()) {
-            Task oldTask = tasks.get(mayBeIdTask.get());
-            prioritizedTask.remove(oldTask);
-        }
     }
 
     @Override
@@ -260,15 +249,16 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Задачи под номером " + task.getId() + " нет");
             return;
         }
+        Task oldTask = tasks.get(task.getId());
         if (task.getStartTime() != null) {
             if (isIntersection(task)) {
                 System.out.println("Данная задача пересекается по времени с другой задачей.");
                 return;
             }
-            deleteOldTaskForSet(task);
+            prioritizedTask.remove(oldTask);
             prioritizedTask.add(task);
         }
-        deleteOldTaskForSet(task);
+        prioritizedTask.remove(oldTask);
         tasks.put(task.getId(), task);
     }
 
@@ -303,10 +293,10 @@ public class InMemoryTaskManager implements TaskManager {
                 System.out.println("Данная задача пересекается по времени с другой задачей.");
                 return;
             }
-            deleteOldTaskForSet(subtask);
+            prioritizedTask.remove(oldSubtask);
             prioritizedTask.add(subtask);
         }
-        deleteOldTaskForSet(subtask);
+        prioritizedTask.remove(oldSubtask);
         subtasks.put(subtask.getId(), subtask);
         Epic epic = epics.get(subtask.getEpicId());
         updateEpicStatus(epic);
