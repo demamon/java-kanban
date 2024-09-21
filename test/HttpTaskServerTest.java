@@ -1,5 +1,5 @@
 import com.google.gson.Gson;
-import HttpServer.HttpTaskServer;
+import server.HttpTaskServer;
 import manager.ManagersUtils;
 import manager.TaskManager;
 import org.junit.jupiter.api.Test;

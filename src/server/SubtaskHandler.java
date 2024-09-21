@@ -1,4 +1,4 @@
-package HttpServer;
+package server;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -6,18 +6,18 @@ import com.sun.net.httpserver.HttpHandler;
 import manager.IntersectionException;
 import manager.NotFoundException;
 import manager.TaskManager;
-import tasks.Task;
+import tasks.Subtask;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
-class TaskHandler extends BaseHttpHandler implements HttpHandler {
+public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
     private final TaskManager tm;
     private final Gson gson;
 
-    TaskHandler(TaskManager tm, Gson gson) {
+    SubtaskHandler(TaskManager tm, Gson gson) {
         this.tm = tm;
         this.gson = gson;
     }
@@ -28,19 +28,19 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
             Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(), exchange.getRequestMethod());
             switch (endpoint) {
                 case GET_ALL: {
-                    handleGetAllTasks(exchange);
+                    handleGetAllSubtask(exchange);
                     break;
                 }
                 case GET_ONE: {
-                    handleGetTask(exchange);
+                    handleGetSubTask(exchange);
                     break;
                 }
                 case POST: {
-                    handlePostTask(exchange);
+                    handlePostSubTask(exchange);
                     break;
                 }
                 case DELETE: {
-                    handleDeleteTask(exchange);
+                    handleDeleteSubTask(exchange);
                     break;
                 }
                 default:
@@ -51,32 +51,32 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void handleGetAllTasks(HttpExchange exchange) throws IOException {
-        String allTasks = tm.getTasks().stream().map(gson::toJson).collect(Collectors.joining("\n"));
-        sendText(exchange, allTasks);
+    private void handleGetAllSubtask(HttpExchange exchange) throws IOException {
+        String allSubtask = tm.getSubtasks().stream().map(gson::toJson).collect(Collectors.joining("\n"));
+        sendText(exchange, allSubtask);
     }
 
-    private void handleGetTask(HttpExchange exchange) throws IOException {
+    private void handleGetSubTask(HttpExchange exchange) throws IOException {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
-            String task = gson.toJson(tm.getTask(id));
-            sendText(exchange, task);
+            String subtask = gson.toJson(tm.getSubtask(id));
+            sendText(exchange, subtask);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }
     }
 
-    private void handlePostTask(HttpExchange exchange) throws IOException {
+    private void handlePostSubTask(HttpExchange exchange) throws IOException {
         InputStream inputStream = exchange.getRequestBody();
         String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        Task taskDeserialized = gson.fromJson(body, Task.class);
-        int id = taskDeserialized.getId();
+        Subtask subtaskDeserialized = gson.fromJson(body, Subtask.class);
+        int id = subtaskDeserialized.getId();
         try {
             if (id == 0) {
-                tm.addNewTask(taskDeserialized);
+                tm.addNewSubtask(subtaskDeserialized);
                 sendCode(exchange);
             } else {
-                tm.updateTask(taskDeserialized);
+                tm.updateSubtask(subtaskDeserialized);
                 sendCode(exchange);
             }
         } catch (NotFoundException e) {
@@ -86,10 +86,10 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void handleDeleteTask(HttpExchange exchange) throws IOException {
+    private void handleDeleteSubTask(HttpExchange exchange) throws IOException {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
-            tm.deleteTask(id);
+            tm.deleteSubtask(id);
             sendText(exchange, "Задача успешно удалена!");
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
@@ -99,7 +99,7 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
     private Endpoint getEndpoint(String requestPath, String requestMethod) {
         String[] pathParts = requestPath.split("/");
 
-        if (pathParts.length == 2 && pathParts[1].equals("tasks")) {
+        if (pathParts.length == 2 && pathParts[1].equals("subtasks")) {
             if (requestMethod.equals("GET")) {
                 return Endpoint.GET_ALL;
             }
@@ -107,7 +107,7 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
                 return Endpoint.POST;
             }
         }
-        if (pathParts.length == 3 && pathParts[1].equals("tasks")) {
+        if (pathParts.length == 3 && pathParts[1].equals("subtasks")) {
             if (requestMethod.equals("GET")) {
                 return Endpoint.GET_ONE;
             }
@@ -118,3 +118,4 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
         return Endpoint.UNKNOWN;
     }
 }
+
