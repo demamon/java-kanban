@@ -1,4 +1,4 @@
-package httpServer;
+package HttpServer;
 
 public enum Endpoint {
     GET_ALL,
