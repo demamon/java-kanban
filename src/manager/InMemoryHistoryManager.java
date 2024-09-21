@@ -81,10 +81,9 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     @Override
-    public List<Task> getHistory() {
+    public List<Task> getHistory() throws NotFoundException {
         if (historyViewedTasks.isEmpty()) {
-            System.out.println("Список просмотренных задач пуст");
-            return null;
+            throw new NotFoundException("Список просмотренных задач пуст");
         }
         return new ArrayList<>(historyLinkedList.getTasks());
     }

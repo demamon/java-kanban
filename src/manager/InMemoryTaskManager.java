@@ -29,11 +29,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public int addNewTask(Task task) {
+    public int addNewTask(Task task) throws IntersectionException {
         if (task.getStartTime() != null) {
             if (isIntersection(task)) {
-                System.out.println("Данная задача пересекается по времени с другой задачей.");
-                return -1;
+                throw new IntersectionException("Данная задача пересекается по времени с другой задачей.");
             }
             prioritizedTask.add(task);
         }
@@ -52,16 +51,14 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public int addNewSubtask(Subtask subtask) {
+    public int addNewSubtask(Subtask subtask) throws NotFoundException, IntersectionException {
         Epic epic = epics.get(subtask.getEpicId());
         if (epic == null) {
-            System.out.println("Эпика под номером " + subtask.getEpicId() + " нет");
-            return -1;
+            throw new NotFoundException("Эпика под номером " + subtask.getEpicId() + " нет");
         }
         if (subtask.getStartTime() != null) {
             if (isIntersection(subtask)) {
-                System.out.println("Данная задача пересекается по времени с другой задачей.");
-                return -1;
+                throw new IntersectionException("Данная задача пересекается по времени с другой задачей.");
             }
             prioritizedTask.add(subtask);
         }
@@ -153,11 +150,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public List<Subtask> getSubtasksForEpic(int id) {
+    public List<Subtask> getSubtasksForEpic(int id) throws NotFoundException {
         Epic epic = epics.get(id);
         if (epic == null) {
-            System.out.println("Задачи под номером " + id + " нет");
-            return new ArrayList<>();
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         }
         ArrayList<Integer> subtaskIds = epic.getSubtaskIds();
         return subtaskIds.stream()
@@ -213,30 +209,27 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task getTask(int id) {
+    public Task getTask(int id) throws NotFoundException {
         if (tasks.get(id) == null) {
-            System.out.println("Задачи под номером " + id + " нет");
-            return null;
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         }
         hm.add(tasks.get(id));
         return tasks.get(id);
     }
 
     @Override
-    public Epic getEpic(int id) {
+    public Epic getEpic(int id) throws NotFoundException {
         if (epics.get(id) == null) {
-            System.out.println("Задачи под номером " + id + " нет");
-            return null;
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         }
         hm.add(epics.get(id));
         return epics.get(id);
     }
 
     @Override
-    public Subtask getSubtask(int id) {
+    public Subtask getSubtask(int id) throws NotFoundException {
         if (subtasks.get(id) == null) {
-            System.out.println("Задачи под номером " + id + " нет");
-            return null;
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         }
         hm.add(subtasks.get(id));
         return subtasks.get(id);
@@ -244,16 +237,14 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
-    public void updateTask(Task task) {
+    public void updateTask(Task task) throws NotFoundException, IntersectionException {
         if (tasks.get(task.getId()) == null) {
-            System.out.println("Задачи под номером " + task.getId() + " нет");
-            return;
+            throw new NotFoundException("Задачи под номером " + task.getId() + " нет");
         }
         Task oldTask = tasks.get(task.getId());
         if (task.getStartTime() != null) {
             if (isIntersection(task)) {
-                System.out.println("Данная задача пересекается по времени с другой задачей.");
-                return;
+                throw new IntersectionException("Данная задача пересекается по времени с другой задачей.");
             }
             prioritizedTask.remove(oldTask);
             prioritizedTask.add(task);
@@ -263,9 +254,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateEpic(Epic newEpic) {
+    public void updateEpic(Epic newEpic) throws NotFoundException {
         if (epics.get(newEpic.getId()) == null) {
-            System.out.println("Задачи под номером " + newEpic.getId() + " нет");
+            throw new NotFoundException("Задачи под номером " + newEpic.getId() + " нет");
         } else {
             Epic oldEpic = epics.get(newEpic.getId());
             ArrayList<Integer> subtaskIds = oldEpic.getSubtaskIds();
@@ -277,21 +268,18 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateSubtask(Subtask subtask) {
+    public void updateSubtask(Subtask subtask) throws NotFoundException, IntersectionException {
         if (subtasks.get(subtask.getId()) == null) {
-            System.out.println("Задачи под номером " + subtask.getId() + " нет");
-            return;
+            throw new NotFoundException("Задачи под номером " + subtask.getId() + " нет");
         }
         Subtask oldSubtask = subtasks.get(subtask.getId());
         if (oldSubtask.getEpicId() != subtask.getEpicId()) {
-            System.out.println("В эпике " + subtask.getEpicId() + " такой задачи нет, " + "задача из эпика - " +
+            throw new NotFoundException("В эпике " + subtask.getEpicId() + " такой задачи нет, " + "задача из эпика - " +
                     oldSubtask.getEpicId());
-            return;
         }
         if (subtask.getStartTime() != null) {
             if (isIntersection(subtask)) {
-                System.out.println("Данная задача пересекается по времени с другой задачей.");
-                return;
+                throw new IntersectionException("Данная задача пересекается по времени с другой задачей.");
             }
             prioritizedTask.remove(oldSubtask);
             prioritizedTask.add(subtask);
@@ -304,9 +292,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteTask(int id) {
+    public void deleteTask(int id) throws NotFoundException {
         if (tasks.get(id) == null) {
-            System.out.println("Задачи под номером " + id + " нет");
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         } else {
             Task task = tasks.get(id);
             if (!prioritizedTask.isEmpty()) {
@@ -318,9 +306,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteEpic(int id) {
+    public void deleteEpic(int id) throws NotFoundException {
         if (epics.get(id) == null) {
-            System.out.println("Задачи под номером " + id + " нет");
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         } else {
             Epic epic = epics.get(id);
             ArrayList<Integer> subtaskIds = epic.getSubtaskIds();
@@ -337,9 +325,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteSubtask(int id) {
+    public void deleteSubtask(int id) throws NotFoundException {
         if (subtasks.get(id) == null) {
-            System.out.println("Задачи под номером " + id + " нет");
+            throw new NotFoundException("Задачи под номером " + id + " нет");
         } else {
             Epic epic = epics.get(subtasks.get(id).getEpicId());
             epic.deleteSubtaskId(id);

@@ -1,4 +1,6 @@
+import manager.IntersectionException;
 import manager.ManagersUtils;
+import manager.NotFoundException;
 import manager.TaskManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public abstract class TaskManagerTest<T extends TaskManager> {
     private static TaskManager tm;
@@ -96,10 +99,8 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
         Task taskNonExistentUpdate = new Task("Test updateTask", "Test updateTask description",
                 TaskStatus.IN_PROGRESS, 10);
-
-        tm.updateTask(taskNonExistentUpdate);
-        taskNonExistentUpdate = tm.getTask(10);
-        assertNull(taskNonExistentUpdate, "Несуществующая задача обновилась.");
+        assertThrows(NotFoundException.class, () -> tm.updateTask(taskNonExistentUpdate),
+                "Несуществующая задача обновилась");
     }
 
     @Test
@@ -123,10 +124,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(subtasksForOldEpic, subtasksForUpdateEpic, "Эпик обновился, но подзадачи не совпадают.");
 
         Epic epicNonExistentUpdate = new Epic("Test oldEpic", "Test oldEpic description", 10);
-
-        tm.updateEpic(epicNonExistentUpdate);
-        epicNonExistentUpdate = tm.getEpic(10);
-        assertNull(epicNonExistentUpdate, "Несуществующий эпик обновился.");
+        assertThrows(NotFoundException.class, () -> tm.updateEpic(epicNonExistentUpdate), "Несуществующий эпик обновился.");
     }
 
     @Test
@@ -148,29 +146,20 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         final int epicNoSubtasksID = tm.addNewEpic(epicNoSubtasks);
         Subtask subtaskIncorrectEpicId = new Subtask("Test subtaskIncorrectEpicId", "subtaskIncorrectEpicId",
                 TaskStatus.NEW, oldSubtaskId, epicNoSubtasksID);
-
-        tm.updateSubtask(subtaskIncorrectEpicId);
-
-        List<Subtask> subtasksForEpicNoSubtasksID = tm.getSubtasksForEpic(epicNoSubtasksID);
-
-        assertEquals(subtasksForEpicNoSubtasksID, new ArrayList<>(), "Подзадача добавлена не в свой эпик.");
-
+        assertThrows(NotFoundException.class, () -> tm.updateSubtask(subtaskIncorrectEpicId),
+                "Подзадача добавлена не в свой эпик.");
         Subtask subtaskNonExistentUpdate = new Subtask("Test oldSubtasak", "Test oldSubtask",
                 TaskStatus.NEW, 10, epicID);
-
-        tm.updateSubtask(subtaskNonExistentUpdate);
-        subtaskNonExistentUpdate = tm.getSubtask(10);
-        assertNull(subtaskNonExistentUpdate, "Несуществующая подзадача обновилась.");
+        assertThrows(NotFoundException.class, () -> tm.updateSubtask(subtaskNonExistentUpdate),
+                "Несуществующая подзадача обновилась.");
     }
 
     @Test
     void deleteTask() {
         Task task = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW);
         final int taskId = tm.addNewTask(task);
-
         tm.deleteTask(taskId);
-        task = tm.getTask(taskId);
-        assertNull(task, "Задача не удалена.");
+        assertThrows(NotFoundException.class, () -> tm.getTask(taskId), "Задача не удалена.");
     }
 
     @Test
@@ -180,12 +169,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description",
                 TaskStatus.NEW, epicId);
         final int subtaskId = tm.addNewSubtask(subtask);
-
         tm.deleteEpic(epicId);
-        epic = tm.getEpic(epicId);
-        assertNull(epic, "Эпик не удален.");
-        subtask = tm.getSubtask(subtaskId);
-        assertNull(subtask, "Эпик удален, а подзадача нет");
+        assertThrows(NotFoundException.class, () -> tm.getEpic(epicId), "Эпик не удален.");
+        assertThrows(NotFoundException.class, () -> tm.getSubtask(subtaskId), "Эпик удален, а подзадача нет");
     }
 
     @Test
@@ -199,8 +185,8 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         final int subtaskId = tm.addNewSubtask(subtask);
 
         tm.deleteSubtask(subtaskId);
-        subtask = tm.getSubtask(subtaskId);
-        assertNull(subtask, "Подзадача не удалена.");
+        assertThrows(NotFoundException.class, () -> tm.getSubtask(subtaskId), "Задача не удалена");
+
         ArrayList<Integer> subtaskIds = epic.getSubtaskIds();
         assertFalse(subtaskIds.contains(subtaskId), "Подзадача не удалена из эпика.");
 
@@ -239,16 +225,16 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     void deleteEpicAndSubtasksHistory() {
         Epic epic = new Epic("Test epic", "Test epic description");
         tm.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test subtask", "Test subtask description", TaskStatus.NEW, 1);
-        Subtask subtask1 = new Subtask("Test subtask1", "Test subtask1 description", TaskStatus.NEW, 1);
+        Subtask subtask = new Subtask("Test subtask", "Test subtask description", TaskStatus.NEW, epic.getId());
+        Subtask subtask1 = new Subtask("Test subtask1", "Test subtask1 description", TaskStatus.NEW, epic.getId());
         tm.addNewSubtask(subtask);
         tm.addNewSubtask(subtask1);
         tm.getEpic(epic.getId());
         tm.getSubtask(subtask.getId());
         tm.getSubtask(subtask1.getId());
         tm.deleteEpic(epic.getId());
-        final List<Task> history = tm.getHistory();
-        assertNull(history, "Подзадачи эпика из истории при удалении эпика не удаляются");
+        assertThrows(NotFoundException.class, () -> tm.getHistory(),
+                "Подзадачи эпика из истории при удалении эпика не удаляются");
     }
 
     @Test
@@ -271,17 +257,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         Task picture4 = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW,
                 timeBeforeDefault, durationIncludeDefaultTask);
         tm.addNewTask(defaultTask);
-        tm.addNewTask(picture1);
-        Task getTask = tm.getTask(picture1.getId());
-        assertNull(getTask, "Не пройден тест с 1 картинки");
-        tm.addNewTask(picture2);
-        getTask = tm.getTask(picture2.getId());
-        assertNull(getTask, "Не пройден тест с 2 картинки");
-        tm.addNewTask(picture3);
-        getTask = tm.getTask(picture3.getId());
-        assertNull(getTask, "Не пройден тест с 3 картинки");
-        tm.addNewTask(picture4);
-        getTask = tm.getTask(picture4.getId());
-        assertNull(getTask, "Не пройден тест с 4 картинки");
+        assertThrows(IntersectionException.class, () -> tm.addNewTask(picture1), "Не пройден тест с 1 картинки");
+        assertThrows(IntersectionException.class, () -> tm.addNewTask(picture2), "Не пройден тест с 2 картинки");
+        assertThrows(IntersectionException.class, () -> tm.addNewTask(picture3), "Не пройден тест с 3 картинки");
+        assertThrows(IntersectionException.class, () -> tm.addNewTask(picture4), "Не пройден тест с 4 картинки");
     }
 }
