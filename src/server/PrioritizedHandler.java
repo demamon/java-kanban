@@ -35,7 +35,7 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
 
     private void handleGetPrioritized(HttpExchange exchange) throws IOException {
         String prioritizedTasks = tm.getPrioritizedTasks().stream().map(gson::toJson).collect(Collectors.joining("\n"));
-        sendText(exchange, prioritizedTasks);
+        sendText(exchange, prioritizedTasks, 200);
     }
 
     private Endpoint getEndpoint(String requestPath, String requestMethod) {

@@ -53,14 +53,14 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
 
     private void handleGetAllTasks(HttpExchange exchange) throws IOException {
         String allTasks = tm.getTasks().stream().map(gson::toJson).collect(Collectors.joining("\n"));
-        sendText(exchange, allTasks);
+        sendText(exchange, allTasks, 200);
     }
 
     private void handleGetTask(HttpExchange exchange) throws IOException {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             String task = gson.toJson(tm.getTask(id));
-            sendText(exchange, task);
+            sendText(exchange, task, 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }
@@ -73,8 +73,8 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
         int id = taskDeserialized.getId();
         try {
             if (id == 0) {
-                tm.addNewTask(taskDeserialized);
-                sendCode(exchange);
+                String idNewTask = gson.toJson(tm.addNewTask(taskDeserialized));
+                sendText(exchange, idNewTask, 201);
             } else {
                 tm.updateTask(taskDeserialized);
                 sendCode(exchange);
@@ -90,7 +90,7 @@ class TaskHandler extends BaseHttpHandler implements HttpHandler {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             tm.deleteTask(id);
-            sendText(exchange, "Задача успешно удалена!");
+            sendText(exchange, "Задача успешно удалена!", 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }

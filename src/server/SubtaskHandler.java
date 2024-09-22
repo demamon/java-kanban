@@ -53,14 +53,14 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
 
     private void handleGetAllSubtask(HttpExchange exchange) throws IOException {
         String allSubtask = tm.getSubtasks().stream().map(gson::toJson).collect(Collectors.joining("\n"));
-        sendText(exchange, allSubtask);
+        sendText(exchange, allSubtask, 200);
     }
 
     private void handleGetSubTask(HttpExchange exchange) throws IOException {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             String subtask = gson.toJson(tm.getSubtask(id));
-            sendText(exchange, subtask);
+            sendText(exchange, subtask, 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }
@@ -73,8 +73,8 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
         int id = subtaskDeserialized.getId();
         try {
             if (id == 0) {
-                tm.addNewSubtask(subtaskDeserialized);
-                sendCode(exchange);
+                String idNewTask = gson.toJson(tm.addNewSubtask(subtaskDeserialized));
+                sendText(exchange, idNewTask, 201);
             } else {
                 tm.updateSubtask(subtaskDeserialized);
                 sendCode(exchange);
@@ -90,7 +90,7 @@ public class SubtaskHandler extends BaseHttpHandler implements HttpHandler {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             tm.deleteSubtask(id);
-            sendText(exchange, "Задача успешно удалена!");
+            sendText(exchange, "Задача успешно удалена!", 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }

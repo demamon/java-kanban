@@ -29,11 +29,11 @@ public class HttpTaskServerTest {
     HttpTaskServer taskServer = new HttpTaskServer(taskManager);
     Gson gson = taskServer.getGson();
 
-    public HttpTaskServerTest() {
+    public HttpTaskServerTest() throws IOException {
     }
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() {
         taskManager.clearTasks();
         taskManager.clearSubtasks();
         taskManager.clearEpics();

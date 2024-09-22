@@ -36,7 +36,7 @@ public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
     private void handleGetHistory(HttpExchange exchange) throws IOException {
         try {
             String historyViewing = tm.getHistory().stream().map(gson::toJson).collect(Collectors.joining("\n"));
-            sendText(exchange, historyViewing);
+            sendText(exchange, historyViewing, 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }

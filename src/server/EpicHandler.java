@@ -57,14 +57,14 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
 
     private void handleGetAllEpic(HttpExchange exchange) throws IOException {
         String allEpic = tm.getEpics().stream().map(gson::toJson).collect(Collectors.joining("\n"));
-        sendText(exchange, allEpic);
+        sendText(exchange, allEpic, 200);
     }
 
     private void handleGetEpic(HttpExchange exchange) throws IOException {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             String epic = gson.toJson(tm.getEpic(id));
-            sendText(exchange, epic);
+            sendText(exchange, epic, 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }
@@ -77,8 +77,8 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
         int id = epicDeserialized.getId();
         try {
             if (id == 0) {
-                tm.addNewEpic(epicDeserialized);
-                sendCode(exchange);
+                String idNewTask = gson.toJson(tm.addNewEpic(epicDeserialized));
+                sendText(exchange, idNewTask, 201);
             } else {
                 tm.updateEpic(epicDeserialized);
                 sendCode(exchange);
@@ -94,7 +94,7 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             tm.deleteEpic(id);
-            sendText(exchange, "Задача успешно удалена!");
+            sendText(exchange, "Задача успешно удалена!", 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }
@@ -104,7 +104,7 @@ public class EpicHandler extends BaseHttpHandler implements HttpHandler {
         try {
             int id = Integer.parseInt(exchange.getRequestURI().getPath().split("/")[2]);
             String epicSubtasks = tm.getSubtasksForEpic(id).stream().map(gson::toJson).collect(Collectors.joining("\n"));
-            sendText(exchange, epicSubtasks);
+            sendText(exchange, epicSubtasks, 200);
         } catch (NotFoundException e) {
             sendNotFound(exchange, e.getMessage());
         }

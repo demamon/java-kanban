@@ -17,17 +17,21 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class HttpTaskServer {
-    private final TaskManager tm;
-    private HttpServer httpServer;
+    private final HttpServer httpServer;
     private final Gson gson;
 
-    public HttpTaskServer(TaskManager tm) {
-        this.tm = tm;
+    public HttpTaskServer(TaskManager tm) throws IOException {
         gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateAdapter())
                 .registerTypeAdapter(Duration.class, new DurationTypeAdapter())
                 .create();
+        httpServer = HttpServer.create(new InetSocketAddress(8080), 0);
+        httpServer.createContext("/tasks", new TaskHandler(tm, gson));
+        httpServer.createContext("/subtask", new SubtaskHandler(tm, gson));
+        httpServer.createContext("/epics", new EpicHandler(tm, gson));
+        httpServer.createContext("/history", new HistoryHandler(tm, gson));
+        httpServer.createContext("/prioritized", new PrioritizedHandler(tm, gson));
     }
 
     public static void main(String[] args) throws IOException {
@@ -36,14 +40,9 @@ public class HttpTaskServer {
         httpTaskServer.start();
     }
 
-    public void start() throws IOException {
-        httpServer = HttpServer.create(new InetSocketAddress(8080), 0);
-        httpServer.createContext("/tasks", new TaskHandler(tm, gson));
-        httpServer.createContext("/subtask", new SubtaskHandler(tm, gson));
-        httpServer.createContext("/epics", new EpicHandler(tm, gson));
-        httpServer.createContext("/history", new HistoryHandler(tm, gson));
-        httpServer.createContext("/prioritized", new PrioritizedHandler(tm, gson));
+    public void start() {
         httpServer.start();
+        System.out.println("Сервер запущен на 8080 порту.");
     }
 
     public void stop() {
